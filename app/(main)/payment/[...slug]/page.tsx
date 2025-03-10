@@ -49,6 +49,29 @@ function formatDate(dateStr: string) {
   return `${timePart}, ${datePart}`;
 }
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; orderCode?: string }>;
+}) {
+  const params = await searchParams;
+  if (!params.status || !params.orderCode) {
+    return {
+      title: "Không tim thấy đơn hàng",
+    };
+  }
+  if (params.status === "CANCELLED") {
+    return {
+      title: `Hủy thanh toán #${params.orderCode}`,
+    };
+  }
+  if (params.status === "PAID") {
+    return {
+      title: `Thanh toán thành công #${params.orderCode}`,
+    };
+  }
+}
+
 export default async function PaymentStatus({
   searchParams,
 }: {
@@ -58,24 +81,36 @@ export default async function PaymentStatus({
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const user = await getUserCookie();
 
-  if (!params.id) {
-    return <div>⚠️ Không tìm thấy ID thanh toán!</div>;
+  if (!params.id || !params.status || !params.orderCode) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        ⚠️ Không tìm thấy thông tin đơn hàng
+      </div>
+    );
   }
   const res = await fetch(`${baseUrl}/api/get-payment/${params.id}`);
 
   const data = await res.json();
 
-  if (data.status !== 200) {
-    return <div>❌ {data?.message}</div>;
+  if (!data || data.status !== 200) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen">
+        ❌ {data?.message}
+      </div>
+    );
   }
 
-  if (data?.result?.status === "PAID") {
+  if (data && data.result?.status === "PAID") {
     const order = await GetOrder(Number(params.orderCode));
-    if (
-      order &&
-      [1, 2, 3, 4].includes(order?.product) &&
-      order.status === "PENDING"
-    ) {
+    if (!order) {
+      console.error("❌ Không tìm thấy đơn hàng!");
+      return (
+        <div className="flex items-center justify-center w-full h-screen">
+          ❌ Không tìm thấy đơn hàng!
+        </div>
+      );
+    }
+    if ([1, 2, 3, 4].includes(order?.product) && order.status === "PENDING") {
       const product = PRICING_OPTIONS.find(
         (item) => item.product === order.product
       );
