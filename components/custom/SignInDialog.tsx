@@ -13,6 +13,7 @@ import { UserDetailContext } from "@/app/context/UserDetailContext";
 import { useConvex, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { v4 as uuidv4 } from "uuid";
+import { setUserCookie } from "@/app/actions";
 
 function SignInDialog({
   open,
@@ -58,7 +59,7 @@ function SignInDialog({
           email: data?.email,
         });
         if (typeof window !== undefined) {
-          localStorage.setItem("user", JSON.stringify(storedUser));
+          setUserCookie(storedUser); 
         }
         setUserDetail(storedUser);
 

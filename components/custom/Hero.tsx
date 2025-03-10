@@ -35,7 +35,6 @@ function Hero() {
   const CreateWorkspace = useMutation(api.workspace.CreateWorkspace);
   const router = useRouter();
   const onGenerate = async (input: string) => {
-    console.log(userDetail);
     if (!userDetail?.name) {
       setOpenDialog(true);
       return;

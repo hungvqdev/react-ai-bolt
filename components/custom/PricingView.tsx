@@ -1,17 +1,59 @@
 "use client";
 import { UserDetailContext } from "@/app/context/UserDetailContext";
 import { PRICING_OPTIONS } from "@/lib/prompt";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
+import axios from "axios";
+import { useConvex, useMutation } from "convex/react";
 import { Button } from "../ui/button";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 function PricingView() {
+  const [loading, setLoading] = useState<{ [key: number]: boolean }>({});
   const userDetailContext = useContext(UserDetailContext);
-
+  const convex = useConvex();
+  
+  const CreateOrder = useMutation(api.orders.CreateOrder);
   if (!userDetailContext) {
     throw new Error("2");
   }
-
   const { userDetail } = userDetailContext;
+  const onPayment = async (amount: number, title: string, product: number, index: number) => {
+    setLoading((prev) => ({ ...prev, [index]: true }));;
+
+    try {
+      const GetNextOrderCode = await convex.query(api.orders.GetNextOrderCode);
+
+      const response = await axios.post("/api/create-payment", {
+        amount: amount,
+        orderCode: GetNextOrderCode,
+        title: title,
+        buyerName: userDetail?.name,
+        buyerEmail: userDetail?.email,
+        description: "TT gói" + " " + title?.toLowerCase(),
+      });
+
+      if (userDetail && response?.status === 200) {
+        await CreateOrder({
+          user: userDetail?._id as Id<"users">,
+          email: userDetail?.email,
+          name: userDetail?.name,
+          orderCode: response?.data?.result?.orderCode,
+          amount: response?.data?.result?.amount,
+          product: product
+        });
+
+        window.location.href = response?.data?.result?.checkoutUrl;
+      } else {
+        console.error("❌ Lỗi thanh toán:");
+      }
+    } catch (error) {
+      console.error("❌ Lỗi thanh toán:", error);
+    } finally {
+      setLoading((prev) => ({ ...prev, [index]: false }));
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="p-5 border rounded-xl flex justify-between w-full mt-4 bg-gray-900">
@@ -37,14 +79,22 @@ function PricingView() {
               <h2 className="text-lg font-medium text-green-600">
                 {Number(op.price).toLocaleString("vi-VN")}đ
               </h2>
-              <h2 className="text-gray-400 line-through">{Number(op.original_price).toLocaleString("vi-VN")}đ</h2>
+              <h2 className="text-gray-400 line-through">
+                {Number(op.original_price).toLocaleString("vi-VN")}đ
+              </h2>
             </div>
 
             <p className="text-gray-400 min-h-[80px]">{op.desc}</p>
             <h2 className="text-xl font-bold text-center">
               {op.tokens} Tokens
             </h2>
-            <Button className="mt-2">Mua ngay</Button>
+
+            <Button
+              onClick={() => onPayment(Number(op.price), op?.name, op?.product, index)}
+              disabled={loading[index] || Object.values(loading).some((state) => state)}
+            >
+              {loading[index] ? "Đang xử lý..." : "Thanh toán ngay"}
+            </Button>
           </div>
         ))}
       </div>

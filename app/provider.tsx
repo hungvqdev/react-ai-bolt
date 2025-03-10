@@ -13,29 +13,65 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/custom/AppSidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { useRouter } from "next/navigation";
-
+import { getUserCookie } from "./actions";
+import { Loader2Icon } from "lucide-react";
 function Provider({ children }: { children: React.ReactNode }) {
   const [messages, setMessages] = useState<Message[] | []>([]);
   const [userDetail, setUserDetail] = useState<UserDetail | null>(null);
   const convex = useConvex();
-  const router = useRouter()
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  // useEffect(() => {
+  //   IsAuthenicated();
+  // }, []);
+
+  // const IsAuthenicated = async () => {
+  //   if (typeof window !== undefined) {
+  //     const user = await getUserCookie()
+  //     if(!user) {
+  //       router.push('/')
+  //       return
+  //     }
+  //     const result = await convex.query(api.users.GetUser, {
+  //       email: user?.email,
+  //     });
+  //     setUserDetail(result);
+  //   }
+  // };
+
   useEffect(() => {
-    IsAuthenicated();
+    async function fetchUser() {
+      try {
+        const user = await getUserCookie();
+
+        if (!user) {
+          router.push("/");
+          return;
+        }
+
+        const result = await convex.query(api.users.GetUser, {
+          email: user?.email,
+        });
+
+        setUserDetail(result);
+      } catch (error) {
+        console.error("Lỗi khi lấy user:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUser();
   }, []);
 
-  const IsAuthenicated = async () => {
-    if (typeof window !== undefined) {
-      const user = JSON.parse(localStorage.getItem("user") as string);
-      if(!user) {
-        router.push('/')
-        return
-      }
-      const result = await convex.query(api.users.GetUser, {
-        email: user?.email,
-      });
-      setUserDetail(result);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="bg-black text-white flex justify-center items-center h-screen gap-2">
+        <Loader2Icon className="animate-spin" />
+        Đang tải ...
+      </div>
+    );
+  }
 
   return (
     <GoogleOAuthProvider

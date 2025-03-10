@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useSidebar } from "../ui/sidebar";
 import { UserDetailContext } from "@/app/context/UserDetailContext"; // Import UserDetailContext
+import { removeUserCookie } from "@/app/actions";
 
 interface SidebarOptionType {
   name: string;
@@ -25,7 +26,7 @@ function SidebarItemFooter() {
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("user"); 
+      removeUserCookie()
     }
     setUserDetail(null);
     router.push("/"); 

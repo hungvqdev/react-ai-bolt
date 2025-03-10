@@ -124,6 +124,7 @@ export const PRICING_OPTIONS = [
     desc: "Thích hợp cho người đam mê và người dùng thông thường để sử dụng nhẹ nhàng, khám phá.",
     price: 10000,
     original_price : 29000,
+    product: 1
   },
   {
     name: "Nâng cao",
@@ -132,6 +133,7 @@ export const PRICING_OPTIONS = [
     desc: "Phù hợp dành cho những người muốn sử dụng nhiều hơn",
     price: 19000,
     original_price : 49000,
+    product:2
   },
   {
     name: "Chuyên nghiệp",
@@ -140,6 +142,7 @@ export const PRICING_OPTIONS = [
     desc: "Được thiết kế dành cho những người chuyên nghiệp cần sử dụng Bolt vài lần mỗi tuần.",
     price: 49000,
     original_price : 99000,
+    product: 3
   },
   {
     name: "Doanh nghiệp",
@@ -148,5 +151,6 @@ export const PRICING_OPTIONS = [
     desc: "Được thiết kế dành cho những người chuyên nghiệp cần sử dụng liên tục để phát triển.",
     price: 99000,
     original_price : 299000,
+    product: 4
   },
 ];
