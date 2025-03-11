@@ -116,7 +116,7 @@ export default async function PaymentStatus({
       );
       const token = Number(user?.token) + Number(product?.value);
       await UpdateTokens(user?._id as Id<"users">, token);
-      await updateOrderStatus(Number(params.orderCode), data?.result?.status);
+      // await updateOrderStatus(Number(params.orderCode), data?.result?.status);
     }
 
     return (
