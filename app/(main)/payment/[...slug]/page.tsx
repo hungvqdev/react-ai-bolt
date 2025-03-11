@@ -80,6 +80,7 @@ export default async function PaymentStatus({
   const params = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const user = await getUserCookie();
+  console.log("cookies trong page", user);
 
   if (!params.id || !params.status || !params.orderCode) {
     return (
@@ -91,6 +92,7 @@ export default async function PaymentStatus({
   const res = await fetch(`${baseUrl}/api/get-payment/${params.id}`);
 
   const data = await res.json();
+  console.log("Payment data:", data); 
 
   if (!data || data.status !== 200) {
     return (
