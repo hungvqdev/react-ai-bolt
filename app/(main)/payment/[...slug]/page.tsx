@@ -7,14 +7,14 @@ import { ConvexHttpClient } from "convex/browser";
 import Link from "next/link";
 import React, { cache } from "react";
 
-const updateOrderStatus = cache(async (orderCode: number, status: string) => {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const result = await convex.mutation(api.orders.UpdateOrderStatus, {
-    orderCode,
-    status,
-  });
-  return result;
-});
+// const updateOrderStatus = cache(async (orderCode: number, status: string) => {
+//   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+//   const result = await convex.mutation(api.orders.UpdateOrderStatus, {
+//     orderCode,
+//     status,s
+//   });
+//   return result;
+// });
 
 const UpdateTokens = cache(async (userId: Id<"users">, token: number) => {
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
