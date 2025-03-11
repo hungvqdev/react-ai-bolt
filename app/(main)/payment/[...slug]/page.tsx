@@ -1,8 +1,8 @@
-// import { getUserCookie } from "@/app/actions";
+import { getUserCookie } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
-// import { Id } from "@/convex/_generated/dataModel";
-// import { PRICING_OPTIONS } from "@/lib/prompt";
+import { Id } from "@/convex/_generated/dataModel";
+import { PRICING_OPTIONS } from "@/lib/prompt";
 import { ConvexHttpClient } from "convex/browser";
 import Link from "next/link";
 import React, { cache } from "react";
@@ -16,14 +16,14 @@ const updateOrderStatus = cache(async (orderCode: number, status: string) => {
   return result;
 });
 
-// const UpdateTokens = cache(async (userId: Id<"users">, token: number) => {
-//   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-//   const result = await convex.mutation(api.users.UpdateToken, {
-//     userId,
-//     token,
-//   });
-//   return result;
-// });
+const UpdateTokens = cache(async (userId: Id<"users">, token: number) => {
+  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  const result = await convex.mutation(api.users.UpdateToken, {
+    userId,
+    token,
+  });
+  return result;
+});
 
 const GetOrder = cache(async (orderCode: number) => {
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -79,7 +79,7 @@ export default async function PaymentStatus({
 }) {
   const params = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  // const user = await getUserCookie();
+  const user = await getUserCookie();
 
   if (!params.id || !params.status || !params.orderCode) {
     return (
@@ -111,11 +111,18 @@ export default async function PaymentStatus({
       );
     }
     if ([1, 2, 3, 4].includes(order?.product) && order.status === "PENDING") {
-      // const product = PRICING_OPTIONS.find(
-      //   (item) => item.product === order.product
-      // );
-      // const token = Number(user?.token) + Number(product?.value);
-      // await UpdateTokens(user?._id as Id<"users">, token);
+      const product = PRICING_OPTIONS.find(
+        (item) => item.product === order.product
+      );
+      const token = Number(user?.token) + Number(product?.value);
+      console.log("userId:", user?._id);
+      console.log("token:", token);
+      if (!user?._id || !token) {
+        console.error("userId hoặc token không hợp lệ!");
+        return;
+      }
+      const resultToken = await UpdateTokens(user?._id as Id<"users">, token);
+      console.log(resultToken);
       await updateOrderStatus(Number(params.orderCode), data?.result?.status);
     }
 
