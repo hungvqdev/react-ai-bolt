@@ -1,37 +1,6 @@
-import { getUserCookie } from "@/app/actions";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { PRICING_OPTIONS } from "@/lib/prompt";
-import { ConvexHttpClient } from "convex/browser";
 import Link from "next/link";
-import React, { cache } from "react";
-
-const updateOrderStatus = cache(async (orderCode: number, status: string) => {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const result = await convex.mutation(api.orders.UpdateOrderStatus, {
-    orderCode,
-    status,
-  });
-  return result;
-});
-
-const UpdateTokens = cache(async (userId: Id<"users">, token: number) => {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const result = await convex.mutation(api.users.UpdateToken, {
-    userId,
-    token,
-  });
-  return result;
-});
-
-const GetOrder = cache(async (orderCode: number) => {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const result = await convex.query(api.orders.GetOrder, {
-    orderCode: orderCode,
-  });
-  return result;
-});
+import React from "react";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr);
@@ -79,8 +48,6 @@ export default async function PaymentStatus({
 }) {
   const params = await searchParams;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const user = await getUserCookie();
-  console.log("cookies trong page", user);
 
   if (!params.id || !params.status || !params.orderCode) {
     return (
@@ -89,10 +56,9 @@ export default async function PaymentStatus({
       </div>
     );
   }
-  const res = await fetch(`${baseUrl}/api/get-payment/${params.id}`);
 
+  const res = await fetch(`${baseUrl}/api/get-payment/${params.id}`);
   const data = await res.json();
-  console.log("Payment data:", data); 
 
   if (!data || data.status !== 200) {
     return (
@@ -103,31 +69,6 @@ export default async function PaymentStatus({
   }
 
   if (data && data.result?.status === "PAID") {
-    const order = await GetOrder(Number(params.orderCode));
-    if (!order) {
-      console.error("❌ Không tìm thấy đơn hàng!");
-      return (
-        <div className="flex items-center justify-center w-full h-screen">
-          ❌ Không tìm thấy đơn hàng!
-        </div>
-      );
-    }
-    if ([1, 2, 3, 4].includes(order?.product) && order.status === "PENDING") {
-      const product = PRICING_OPTIONS.find(
-        (item) => item.product === order.product
-      );
-      const token = Number(user?.token) + Number(product?.value);
-      console.log("userId:", user?._id);
-      console.log("token:", token);
-      if (!user?._id || !token) {
-        console.error("userId hoặc token không hợp lệ!");
-        return;
-      }
-      const resultToken = await UpdateTokens(user?._id as Id<"users">, token);
-      console.log(resultToken);
-      await updateOrderStatus(Number(params.orderCode), data?.result?.status);
-    }
-
     return (
       <div className="flex flex-col items-center w-full justify-center h-[calc(100vh-72px)]  gap-4 p-4 md:p-6">
         <div className="flex flex-col items-center gap-2 text-center">

@@ -39,10 +39,6 @@ function Provider({ children }: { children: React.ReactNode }) {
   //   }
   // };
   useEffect(() => {
-    console.log("Cookies in Vercel:", document.cookie); // Log cookies khi đã render trên client
-  }, []);
-  
-  useEffect(() => {
     async function fetchUser() {
       try {
         const user = await getUserCookie();

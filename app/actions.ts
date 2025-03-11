@@ -30,6 +30,5 @@ export async function getUserCookie() {
 }
 
 export async function removeUserCookie() {
-  const cookieStore = await cookies();
-  cookieStore.delete("user");
+  (await cookies()).delete("user");
 }

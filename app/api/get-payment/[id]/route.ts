@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { PRICING_OPTIONS } from "@/lib/prompt";
 
 export async function GET(
   req: NextRequest,
@@ -35,19 +38,42 @@ export async function GET(
       }
     );
 
-    if (res?.data?.code === '00') {
-      return NextResponse.json({ status: 200, result: res.data.data });
+    if (res?.data?.code === "00") {
+      const paymentData = res.data.data;
+      const orderCode = paymentData?.orderCode;
+      const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+      const order = await convex.query(api.orders.GetOrder, { orderCode });
+
+      if (order) {
+        const user = await convex.query(api.users.GetUser, {
+          email: order?.email,
+        });
+
+        if (
+          paymentData?.status === "PAID" &&
+          [1, 2, 3, 4].includes(order?.product)
+        ) {
+          const product = PRICING_OPTIONS.find(
+            (item) => item.product === order.product
+          );
+          const token = Number(user?.token) + Number(product?.value);
+
+          await convex.mutation(api.users.UpdateToken, {
+            userId: user?._id,
+            token,
+          });
+          await convex.mutation(api.orders.UpdateOrderStatus, {
+            orderCode,
+            status: "PAID",
+          });
+        }
+      }
+
+      return NextResponse.json({ status: 200, result: paymentData });
     } else {
-      return NextResponse.json({
-        status: 500,
-        message: res?.data?.desc,
-      });
+      return NextResponse.json({ status: 500, message: res?.data?.desc });
     }
   } catch (error) {
-    return NextResponse.json({
-      status: 500,
-      message: "Lỗi server!",
-      error: error,
-    });
+    return NextResponse.json({ status: 500, message: "Lỗi server!", error });
   }
 }
