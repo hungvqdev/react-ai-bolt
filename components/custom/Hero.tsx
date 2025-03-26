@@ -10,13 +10,9 @@ import { Id } from "@/convex/_generated/dataModel";
 import ChatInput from "./ChatInput";
 import { toast } from "sonner";
 import ToggleSidebar from "./ToggleSidebar";
+import { LOOKUP_SUGGESTIONS } from "@/constants/content";
 
-const LOOKUP_SUGGESTIONS: string[] = [
-  "Tạo màn hình đăng nhập",
-  "Tạo dashboard trang bán hàng",
-  "Tạo ứng dụng đặt đồ ăn",
-  "clone todo app",
-];
+
 
 function Hero() {
   const messagesContext = useContext(MessagesContext);

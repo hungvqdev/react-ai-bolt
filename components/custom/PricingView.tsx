@@ -1,12 +1,12 @@
 "use client";
 import { UserDetailContext } from "@/app/context/UserDetailContext";
-import { PRICING_OPTIONS } from "@/lib/prompt";
 import React, { useContext, useState } from "react";
 import axios from "axios";
 import { useConvex, useMutation } from "convex/react";
 import { Button } from "../ui/button";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
+import { PRICING_OPTIONS } from "@/constants/content";
 
 function PricingView() {
   const [loading, setLoading] = useState<{ [key: number]: boolean }>({});

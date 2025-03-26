@@ -1,22 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/utils/formatDate";
 import Link from "next/link";
 import React from "react";
 
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr);
-  const timePart = new Intl.DateTimeFormat("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  }).format(date);
-  const datePart = new Intl.DateTimeFormat("vi-VN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(date);
-
-  return `${timePart}, ${datePart}`;
-}
 
 export async function generateMetadata({
   searchParams,

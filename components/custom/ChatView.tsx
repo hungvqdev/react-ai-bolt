@@ -12,20 +12,16 @@ import ChatInput from "./ChatInput";
 import axios from "axios";
 import { Loader2Icon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { CHAT_PROMPT } from "@/lib/prompt";
+import { CHAT_PROMPT } from "@/constants/prompt";
 import { toast } from "sonner";
-
-export const calculateWords = (inputText: string): number => {
-  return inputText.trim().split(/\s+/).filter(word => word).length;
-};
-
+import { calculateWords } from "@/utils/calculateWords";
 
 function ChatView() {
   const { id } = useParams();
   const convex = useConvex();
   const workspaceId = (Array.isArray(id) ? id[0] : id) as Id<"workspace">;
-  const router = useRouter()
-  
+  const router = useRouter();
+
   useEffect(() => {
     if (workspaceId) GetWorkspaceData();
   }, [workspaceId]);
@@ -43,7 +39,7 @@ function ChatView() {
   const { userDetail, setUserDetail } = userDetailContext;
   const [loading, setLoading] = useState(false);
   const UpdateMessages = useMutation(api.workspace.UpdateMessages);
-  const UpdateTokens = useMutation(api.users.UpdateToken)
+  const UpdateTokens = useMutation(api.users.UpdateToken);
   const GetWorkspaceData = async () => {
     const result = await convex.query(api.workspace.GetWorkspace, {
       workspaceId,
@@ -79,29 +75,30 @@ function ChatView() {
       workspaceId: id as Id<"workspace">,
     });
 
-    const token = Number(userDetail?.token) - Number(calculateWords(JSON.stringify(aiRes)))
-    setUserDetail(prev => ({
+    const token =
+      Number(userDetail?.token) - Number(calculateWords(JSON.stringify(aiRes)));
+    setUserDetail((prev) => ({
       ...prev!,
-      token: token
-    }))
+      token: token,
+    }));
     await UpdateTokens({
-      userId: userDetail?._id as Id<'users'>,
-      token: token
-    })
+      userId: userDetail?._id as Id<"users">,
+      token: token,
+    });
     setLoading(false);
   };
 
   const onGenerate = (input: string) => {
-    if(userDetail?.token as number < 100) {
+    if ((userDetail?.token as number) < 100) {
       toast("Số lượng token của bạn không đủ để thực hiện yêu cầu.", {
         action: {
           label: "Mua ngay",
-          onClick: () => router.push('/pricing'),
+          onClick: () => router.push("/pricing"),
         },
         duration: Infinity,
         closeButton: true,
       });
-      return
+      return;
     }
 
     setMessages((prev) => [
@@ -115,16 +112,14 @@ function ChatView() {
   return (
     <div className="relative h-[calc(100vh-128px)] flex flex-col">
       <div className="flex-1 overflow-y-scroll scrollbar-hide">
-        {messages?.map((msg, index) => 
-        
-        (
+        {messages?.map((msg, index) => (
           <div
             key={index}
             className="p-3 rounded-lg text-white mb-2 bg-gray-600 flex items-start gap-2 leading-7"
           >
             {msg?.role === "user" && (
               <Image
-                src={userDetail?.picture as string  || '/logo.png'}
+                src={(userDetail?.picture as string) || "/logo.png"}
                 alt="Avatar"
                 width={35}
                 height={35}
@@ -132,13 +127,10 @@ function ChatView() {
               />
             )}
             <div className="flex flex-col">
-               <ReactMarkdown>{msg.content}</ReactMarkdown> 
-              
+              <ReactMarkdown>{msg.content}</ReactMarkdown>
             </div>
           </div>
-        )
-        
-        )}
+        ))}
         <div ref={messagesEndRef} />
         {loading && (
           <div className="p-3 rounded-lg text-white mb-2 bg-gray-600 flex items-start gap-2">
@@ -147,7 +139,7 @@ function ChatView() {
           </div>
         )}
       </div>
-      <ChatInput onGenerate={onGenerate}/>
+      <ChatInput onGenerate={onGenerate} />
     </div>
   );
 }

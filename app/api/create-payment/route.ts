@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import crypto from "crypto";
+import { generateSignature } from "@/utils/generateSignature";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     if (!amount || !orderCode || !description) {
       console.error("⚠️ Thiếu dữ liệu bắt buộc!");
       return NextResponse.json(
-        { message: "Thiếu dữ liệu bắt buộc!" },
+        { status: 400, message: "Thiếu dữ liệu bắt buộc!" },
         { status: 400 }
       );
     }
@@ -23,25 +23,9 @@ export async function POST(req: NextRequest) {
     if (!API_KEY || !CLIENT_ID || !CHECKSUM_KEY) {
       console.error("❌ Thiếu API Key, Client ID hoặc Checksum Key!");
       return NextResponse.json(
-        { message: "Thiếu API Key, Client ID hoặc Checksum Key!" },
-        { status: 500 }
+        { status: 500, message: "Thiếu API Key, Client ID hoặc Checksum Key!" },
+        { status: 500 } 
       );
-    }
-
-    // ✅ Tạo signature bằng HMAC_SHA256
-    function generateSignature(
-      amount: number,
-      orderCode: number,
-      description: string,
-      cancelUrl: string,
-      returnUrl: string,
-      CHECKSUM_KEY: string
-    ) {
-      const data = `amount=${amount}&cancelUrl=${cancelUrl}&description=${description}&orderCode=${orderCode}&returnUrl=${returnUrl}`;
-      return crypto
-        .createHmac("sha256", CHECKSUM_KEY)
-        .update(data)
-        .digest("hex");
     }
 
     const cancelUrl =
@@ -93,15 +77,29 @@ export async function POST(req: NextRequest) {
     );
 
     if (res.data.desc === "success") {
-      return NextResponse.json({ status: 200, result: res.data.data });
+      return NextResponse.json(
+        { status: 200, result: res.data.data },
+        { status: 200 } 
+      );
     } else {
-      return NextResponse.json({
-        status: 500,
-        message: "Lỗi từ PayOS",
-        error: res.data,
-      });
+      return NextResponse.json(
+        {
+          status: 500,
+          message: res.data.desc || "Lỗi từ PayOS",
+          error: res.data,
+        },
+        { status: 500 } 
+      );
     }
   } catch (error) {
-    return NextResponse.json({ status: 500, result: error });
+    return NextResponse.json(
+      {
+        status: 500,
+        result: {
+          message: error instanceof Error ? error.message : "Lỗi không xác định",
+        },
+      },
+      { status: 500 }
+    );
   }
 }

@@ -9,17 +9,17 @@ import {
 } from "@codesandbox/sandpack-react";
 import axios from "axios";
 import { MessagesContext } from "@/app/context/MessagesContext";
-import { CODE_GEN_PROMPT, DEFAULT_FILE, DEPENDANCY } from "@/lib/prompt";
+import { CODE_GEN_PROMPT, DEFAULT_FILE, DEPENDANCY } from "@/constants/prompt";
 import { useConvex, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useParams } from "next/navigation";
 import { Id } from "@/convex/_generated/dataModel";
 import { Loader2Icon, LucideDownload, Rocket } from "lucide-react";
-import { calculateWords } from "./ChatView";
 import { UserDetailContext } from "@/app/context/UserDetailContext";
 import SandpackPreviewClient from "./SandpackPreviewClient";
 import { Button } from "../ui/button";
 import { ActionType } from "@/app/types";
+import { calculateWords } from "@/utils/calculateWords";
 
 function CodeView() {
   const { id } = useParams();

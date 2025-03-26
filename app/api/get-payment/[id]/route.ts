@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
-import { PRICING_OPTIONS } from "@/lib/prompt";
+import { PRICING_OPTIONS } from "@/constants/content";
 
 export async function GET(
   req: NextRequest,
